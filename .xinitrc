@@ -6,7 +6,5 @@ hsetroot -solid "#000000"
 
 xscreensaver -no-splash &
 
-xcompmgr -cCfF &
-
 xmonad
 

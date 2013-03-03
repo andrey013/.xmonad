@@ -20,6 +20,7 @@ main = xmonad =<< xmobar (defaultConfig
     , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
     , ((0, xK_Print), spawn "scrot")
     , ((mod4Mask .|. shiftMask, xK_x), spawn "killall xcompmgr; sleep 1; xcompmgr -cCfF &")
+    , ((mod4Mask, xK_x), spawn "killall xcompmgr &")
     , ((mod4Mask .|. shiftMask, xK_Return), randomBg $ RGB 0x00 0x3f)
     ])
 
@@ -33,8 +34,6 @@ layout = spiral ratio ||| threeCol ||| tall ||| Full
     delta   = 3/100
     -- Default proportion of screen occupied by master pane
     ratio   = 2/3
-
-     
 
 myFadeHook = fadeInactiveLogHook 0.7
 
