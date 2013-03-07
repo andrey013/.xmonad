@@ -1,30 +1,40 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 import XMonad
+import qualified XMonad.StackSet as W
 import XMonad.Actions.RandomBackground
 import XMonad.Layout.Spiral
 import XMonad.Layout.ThreeColumns
+import XMonad.Layout.MultiToggle
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.FadeInactive
-import XMonad.Util.EZConfig(additionalKeys)
+import XMonad.Util.EZConfig(additionalKeysP)
 import System.IO
+
+data MIRROR = MIRROR deriving (Read, Show, Eq, Typeable)
+instance Transformer MIRROR Window where
+    transform _ x k = k (Mirror x) (\(Mirror x') -> x')
 
 main = xmonad =<< xmobar (defaultConfig
     { borderWidth        = 0
     , terminal           = "urxvt"
-    , manageHook = manageHook defaultConfig
+    , manageHook = myManageHooks
     , layoutHook = layout
     , logHook = myFadeHook
     , modMask = mod4Mask
-    } `additionalKeys`
-    [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
-    , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
-    , ((0, xK_Print), spawn "scrot")
-    , ((mod4Mask .|. shiftMask, xK_x), spawn "killall xcompmgr; sleep 1; xcompmgr -cCfF &")
-    , ((mod4Mask, xK_x), spawn "killall xcompmgr &")
-    , ((mod4Mask .|. shiftMask, xK_Return), randomBg $ RGB 0x00 0x3f)
+    } `additionalKeysP`
+    [ ("M-S-z", spawn "xscreensaver-command -lock")
+    , ("C-<Print>", spawn "sleep 0.2; scrot -s")
+    , ("<Print>", spawn "scrot")
+    , ("M-x", sendMessage $ Toggle MIRROR)
+    , ("M-S-<Return>", randomBg $ RGB 0x00 0x3f)
     ])
 
-layout = spiral ratio ||| threeCol ||| tall ||| Full
+layout = mkToggle (single MIRROR) (spiral ratio ||| threeCol ||| tall ||| Full)
   where
     threeCol = ThreeColMid nmaster delta ratio
     tall   = Tall nmaster delta ratio
@@ -37,3 +47,5 @@ layout = spiral ratio ||| threeCol ||| tall ||| Full
 
 myFadeHook = fadeInactiveLogHook 0.7
 
+myManageHooks = composeAll
+  [ isFullscreen --> (doF W.focusDown <+> doFullFloat) ]
